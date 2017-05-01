@@ -1,0 +1,83 @@
+* {
+  box-sizing: border-box;
+  font-family: "times new roman";
+  font-size: 16px;
+}
+body {
+  background-color: slategray;
+}
+select, option, input {
+  font-size: 12px;
+}
+select, input, button {
+  height: 1.5rem;
+  border-radius: .125rem;
+}
+select, input {
+  background-color: #f9efb9;
+  border: .1em solid #775;
+  color: #775;
+}
+input {
+  width: 2.5rem;
+  text-align: center;
+}
+button {
+  background-color: #775;
+  border-style: none;
+  color: #f9efb9;
+}
+hr {
+  border: .1em solid #775;
+  border-bottom-width: 0;
+  margin: .25em;
+}
+.editor-container {
+  margin-left: 3em;
+}
+.division-editor {
+  background-color: #f9efb9;
+  height: 10em;
+  min-width: 50.5em;
+  margin-bottom: 1em;
+  padding: 0.25em;
+  color: #775;
+}
+.division-editor svg, .mini-editor {
+  margin: .25em;
+  border: .1em solid #775;
+  border-radius: .125em;
+  float: left;
+}
+.division-editor svg {
+  background-color: #775;
+}
+.mini-editor {
+  text-align: center;
+  width: 13em;
+  height: 9em;
+  padding: .25em;
+}
+.editor-row {
+  height: 1.75em;
+  margin-top: .25em;
+  display: inline-block;
+}
+.editor-row *, .charge-editor * {
+  display: block;
+  float: left;
+  margin: .125em;
+  margin-bottom: 0;
+  margin-top: 0;
+}
+.tincture-select {
+  width: 5em;
+}
+.charge-editor {
+  background-color: #f9efb9;
+  color: #775;
+  display: table;
+  padding-left: .5em;
+  padding-top: .5em;
+  padding-right: .5em;
+}
