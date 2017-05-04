@@ -326,7 +326,7 @@ class Polygon {
   }
 
   containsPoint(pt) {
-    var line = new Line(pt, new Point(pt.x+this.fullRect.x2+1000, pt.y));
+    var line = new Line(pt, new Point(pt.x+this.fullRect.x2+1001, pt.y));
     var intersectionCount = 0;
     for(let i=0; i<this.sides.length; i++) {
       let side = this.sides[i];
@@ -375,41 +375,57 @@ class Polygon {
     }
     return intersectionCount%2===1;
   }
-
   getHorizontalCrossSection(height) {
-    var horizLine = new Line(new Point(-1000, height), new Point(1000, height));
+    return this.getCrossSection(new Line(new Point(-1000, height), new Point(1000, height)));
+  }
+  getCrossSection(line) {
     var intersections = [];
     for(let i=0; i<this.sides.length; i++) {
       var side = this.sides[i];
       var intersection;
       try {
-        intersection = horizLine.getSegmentIntersection(side);
+        intersection = line.getSegmentIntersection(side);
       } catch(err) {
         intersection = null;
       }
       if(intersection) {
-        var isLegitIntersection = !intersection.equals(side.p1);
-        if(!isLegitIntersection) {
-          let previousSide = this.sides[i-1>=0? i-1 : this.sides.length-1];
-          isLegitIntersection = (previousSide.p1.y-height)/Math.abs(previousSide.p1.y-height)+(side.p2.y-height)/Math.abs(side.p2.y-height) === 0;
-        }
-        if(isLegitIntersection) {
+        // var isLegitIntersection = !intersection.equals(side.p1);
+        // if(!isLegitIntersection) {
+        //   let previousSide = this.sides[i-1>=0? i-1 : this.sides.length-1];
+        //   isLegitIntersection = (previousSide.p1.y-height)/Math.abs(previousSide.p1.y-height)+(side.p2.y-height)/Math.abs(side.p2.y-height) === 0;
+        // }
+        // if(isLegitIntersection) {
           intersections.push(intersection);
-        }
+        // }
       }
     }
+    if(this.containsPoint(line.p1)) {
+      intersections.push(line.p1);
+    }
+    if(this.containsPoint(line.p2)) {
+      intersections.push(line.p2);
+    }
     intersections.sort(function(a, b) {
-      if(a.x < b.x) {
+      let lineToA = new Line(line.p1, a);
+      let aDist = lineToA.getLength();
+      let lineToB = new Line(line.p1, b);
+      let bDist = lineToB.getLength();
+      if(aDist < bDist) {
         return -1;
-      } else if (b.x < a.x) {
+      } else if (bDist < aDist) {
         return 1;
       } else {
         return 0;
       }
     });
     var lines = [];
-    for(let i=0; i<intersections.length; i+=2) {
-      lines.push(new Line(intersections[i], intersections[i+1]));
+    for(let i=0; i<intersections.length-1; i++) {
+      var newLine = new Line(intersections[i], intersections[i+1]);
+      let middlePt = newLine.getPointOnLine(newLine.getLength()/2);
+      let indexInSides = this.sides.findIndex(function(side) { return side.equals(newLine); });
+      if(this.containsPoint(middlePt) && indexInSides===-1) {
+        lines.push(newLine);
+      }
     }
     return lines;
   }

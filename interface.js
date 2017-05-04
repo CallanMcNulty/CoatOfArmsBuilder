@@ -37,6 +37,9 @@ $(document).ready(function() {
     }
     divisionEditor.append(createSubdivisionEditor(division, element));
     divisionEditor.append(createChargeMaker(division, element));
+    if(division.charges.length > 0) {
+      divisionEditor.append(createLayoutEditor(division));
+    }
     if(division.charges.length!==0) {
       var sameCharges = [];
       var chargeElementSameChargesMap = [];
@@ -285,6 +288,81 @@ $(document).ready(function() {
       emblazoner.update();
     });
     return chargeEditor;
+  }
+
+  function createLayoutEditor(division) {
+    var layouts = [{name:"default", val:"default"}, {name:"specified", val:"specified"}, {name:"bendwise", val:"bend"},
+                  {name:"bendwise sinister", val:"bendSinister"}, {name:"chevronwise", val:"chevron"}, {name:"chevronwise reversed", val:"chevronReversed"},
+                  {name:"crosswise", val:"cross"}, {name:"fesswise", val:"fess"}, {name:"palewise", val:"pale"}, {name:"saltirewise", val:"saltire"}];
+    var layoutEditor = $("<div class='mini-editor'><span>Charge Layout</span><hr></div>");
+    var editorRow = $("<div class='editor-row'></div>");
+    editorRow = $("<div class='editor-row'></div>");
+
+    htmlString = "<label>Layout:</label><select>";
+    for(let i=0; i<layouts.length; i++) {
+      htmlString += "<option value="+layouts[i].val+" "+(layouts[i].val===division.chargeArrangement ? "selected":"")+">"+
+                    layouts[i].name+"</option>";
+    }
+    htmlString += "</select>";
+    var layoutSelector = $(htmlString);
+    editorRow.append(layoutSelector);
+    layoutEditor.append(editorRow);
+
+    editorRow = $("<div class='editor-row'></div>");
+
+    htmlString = "<label>Specified:</label><input class='long-input' />";
+    var specifiedInput = $(htmlString);
+    specifiedInput.val(division.specifiedChargeArrangement.join(" "));
+    editorRow.append(specifiedInput);
+    layoutEditor.append(editorRow);
+
+    editorRow = $("<div class='editor-row'></div>");
+
+    htmlString = "<button>CHANGE LAYOUT</button>";
+    var customButton = $(htmlString);
+    editorRow.append(customButton);
+    layoutEditor.append(editorRow);
+
+    if(division.chargeArrangement!=="specified") {
+      specifiedInput.hide();
+      customButton.hide();
+    }
+
+    layoutSelector.change(function() {
+      var choice = $(layoutSelector[1]).val();
+      division.chargeArrangement = choice;
+      if(choice!=="specified") {
+        division.update();
+        emblazoner.update();
+        specifiedInput.hide();
+        customButton.hide();
+        $(specifiedInput[1]).val("");
+      } else {
+        specifiedInput.show();
+        customButton.show();
+      }
+    });
+    customButton.click(function() {
+      var inptString = $(specifiedInput[1]).val();
+      let numberStrings = inptString.split(/\D+/g);
+      let numbers = [];
+      let sum = 0;
+      for(let i=0; i<numberStrings.length; i++) {
+        let num = parseInt(numberStrings[i]);
+        if(!isNaN(num)) {
+          numbers.push(num);
+          sum += num;
+        }
+      }
+      if(sum===division.charges.length) {
+        division.specifiedChargeArrangement = numbers;
+        division.update();
+        emblazoner.update();
+      } else {
+        $(specifiedInput[1]).val("INVALID");
+      }
+    });
+    return layoutEditor;
   }
 
 });

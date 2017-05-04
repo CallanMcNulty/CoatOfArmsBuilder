@@ -19,7 +19,16 @@ class Division {
     if(this.dividingLine !== "none") {
       this.divide();
     }
-    this.updateChargeLayout();
+    if(this.chargeArrangement==="specified") {
+      let sum = this.specifiedChargeArrangement.reduce(function (a, b) {
+        return a + b;
+      }, 0);
+      if(sum!==this.charges.length) {
+        this.chargeArrangement = "default";
+        this.specifiedChargeArrangement = [];
+      }
+    }
+    this.updateChargeLayout(this.chargeArrangement, this.specifiedChargeArrangement);
     var ordinaries = this.ordinaries.slice();
     this.ordinaries = [];
     for(let i=0; i<ordinaries.length; i++) {
@@ -92,6 +101,10 @@ class Division {
       charge = new Charge();
       charge.parentDivision = this;
       charge.device = device;
+      if(device==="fess"||device==="pale"||device==="bend"||device==="bendSinister"||device==="cross"
+                        ||device==="chevron"||device==="chevronReversed"||device==="saltire") {
+        charge.chargeDivision.chargeArrangement = device;
+      }
     }
     this.ordinaries.push(charge);
     var portions = dividePolygon(this.polygon, copyPaths(DIVISION[device]));
@@ -130,7 +143,8 @@ class Division {
     if(numbers===null) { numbers=this.specifiedChargeArrangement; }
 
     var chargeLayout = getLayout(this.charges.length, this.polygon, newArrangement, numbers);
-    var chargePositions = getLayoutPoints(chargeLayout);
+    let layoutData = getLayoutPoints(chargeLayout);
+    var chargePositions = layoutData.pts;
     // var chargeMaxRadii = [];
     for(let i=0; i<this.charges.length; i++) {
       let charge = this.charges[i];
@@ -150,7 +164,7 @@ class Division {
 
     for(let i=0; i<this.charges.length; i++) {
       // this.charges[i].chargeDivision.polygon.resizeToRadius(maxRadius);
-      this.charges[i].resize(maxRadius);
+      this.charges[i].resize(layoutData.radius);
       // this.charges[i].chargeDivision.resize(maxRadius);
     }
   }

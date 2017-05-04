@@ -206,12 +206,12 @@ function divideAmongRows(num, rows) {
   var numbersPerRow = [];
   var rowsLengthSum = 0;
   for(let i=0; i<rows.length; i++) {
-    rowsLengthSum += rows[i].p2.x - rows[i].p1.x;
+    rowsLengthSum += rows[i].getLength();//rows[i].p2.x - rows[i].p1.x;
   }
   var remaining = num;
   var remainingLengths = [];
   for(let i=0; i<rows.length; i++) {
-    let rowLength = rows[i].p2.x - rows[i].p1.x;
+    let rowLength = rows[i].getLength();//rows[i].p2.x - rows[i].p1.x;
     let lengthRatio = rowLength/rowsLengthSum;
     let portion = lengthRatio*num;
     let numOnRow = Math.floor(lengthRatio*num);
@@ -262,13 +262,73 @@ function getLayout(num, divPoly, type="default", numbers = []) {
       }
       numbersPerRow.push(numThisRow);
     }
-    rows = divideAmongMultiLineRows(getSomeNumberOfRows(numRows), numbersPerRow);
-
+    rows = getSomeNumberOfRows(numRows, divPoly);
+    numbersPerRow = divideAmongMultiLineRows(rows, numbersPerRow);
   } else if(type==="default") {
     rows = getEvenRows(num, divPoly);
     numbersPerRow = divideAmongRows(num, rows);
   } else if(type==="specified") {
-    rows = divideAmongMultiLineRows(getSomeNumberOfRows(numbersPerRow.length), numbersPerRow);
+    rows = getSomeNumberOfRows(numbersPerRow.length, divPoly);
+    numbersPerRow = divideAmongMultiLineRows(rows, numbersPerRow);
+  } else if(type==="fess") {
+    let center = divPoly.getCenter();
+    rows = divPoly.getHorizontalCrossSection(center.y);
+    numbersPerRow = divideAmongRows(num, rows);
+  } else if(type==="pale") {
+    let center = divPoly.getCenter();
+    let line = new Line(new Point(center.x,center.y-1000), new Point(center.x,center.y+1000));
+    rows = divPoly.getCrossSection(line);
+    numbersPerRow = divideAmongRows(num, rows);
+  } else if(type==="bend") {
+    let center = divPoly.getCenter();
+    let line = new Line(new Point(center.x-1000,center.y-1000), new Point(center.x+1000,center.y+1000));
+    rows = divPoly.getCrossSection(line);
+    numbersPerRow = divideAmongRows(num, rows);
+  } else if(type==="bendSinister") {
+    let center = divPoly.getCenter();
+    let line = new Line(new Point(center.x-1000,center.y+1000), new Point(center.x+1000,center.y-1000));
+    rows = divPoly.getCrossSection(line);
+    numbersPerRow = divideAmongRows(num, rows);
+  } else if(type==="saltire") {
+    let center = divPoly.getCenter();
+    let line = new Line(new Point(center.x,center.y), new Point(center.x+1000,center.y+1000));
+    let line2 = new Line(new Point(center.x,center.y), new Point(center.x+1000,center.y-1000));
+    let line3 = new Line(new Point(center.x,center.y), new Point(center.x-1000,center.y+1000));
+    let line4 = new Line(new Point(center.x,center.y), new Point(center.x-1000,center.y-1000));
+    let lines = [line, line2, line3, line4];
+    for(let i=0; i<lines.length; i++) {
+      rows = rows.concat(divPoly.getCrossSection(lines[i]));
+    }
+    numbersPerRow = divideAmongRows(num, rows);
+  } else if(type==="cross") {
+    let center = divPoly.getCenter();
+    let line = new Line(new Point(center.x,center.y), new Point(center.x,center.y+1000));
+    let line2 = new Line(new Point(center.x,center.y), new Point(center.x,center.y-1000));
+    let lines = [line, line2];
+    for(let i=0; i<lines.length; i++) {
+      rows = rows.concat(divPoly.getCrossSection(lines[i]));
+    }
+    line = new Line(new Point(center.x-1000,center.y), new Point(center.x+1000,center.y));
+    rows = rows.concat(divPoly.getCrossSection(line));
+    numbersPerRow = divideAmongRows(num, rows);
+  } else if(type==="chevron") {
+    let offset = divPoly.fullRect.height/5;
+    let center = divPoly.getCenter();
+    center.y -= offset;
+    let line = new Line(new Point(center.x,center.y), new Point(center.x-500,center.y+200));
+    let line2 = new Line(new Point(center.x,center.y), new Point(center.x+500,center.y+200));
+    rows = rows.concat(divPoly.getCrossSection(line));
+    rows = rows.concat(divPoly.getCrossSection(line2));
+    numbersPerRow = divideAmongRows(num, rows);
+  } else if(type==="chevronReversed") {
+    let offset = divPoly.fullRect.height/5;
+    let center = divPoly.getCenter();
+    center.y += offset;
+    let line = new Line(new Point(center.x,center.y), new Point(center.x-500,center.y-200));
+    let line2 = new Line(new Point(center.x,center.y), new Point(center.x+500,center.y-200));
+    rows = rows.concat(divPoly.getCrossSection(line));
+    rows = rows.concat(divPoly.getCrossSection(line2));
+    numbersPerRow = divideAmongRows(num, rows);
   }
 
   layout = [];
@@ -280,16 +340,19 @@ function getLayout(num, divPoly, type="default", numbers = []) {
 
 function getLayoutPoints(layout) {
   var points = [];
+  let minSpacing = Infinity;
   for(let i=0; i<layout.length; i++) {
     let row = layout[i].row;
     let num = layout[i].number;
     var rowLength = row.getLength();
     var spacing = rowLength/(num+1);
+    minSpacing = Math.min(spacing,minSpacing);
     for(let i=1; i<=num; i++) {
-      points.push(new Point(row.p1.x+i*spacing,row.p1.y));
+      // points.push(new Point(row.p1.x+i*spacing,row.p1.y));
+      points.push(row.getPointOnLine(i*spacing));
     }
   }
-  return points;
+  return {radius:minSpacing/2, pts:points};
 }
 
 function dividePolygon(basePolygon, paths) {
