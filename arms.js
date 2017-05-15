@@ -65,6 +65,64 @@ class Division {
     }
     return true;
   }
+  blazon(b="") {
+    if(this.subdivisions.length > 0) {
+      b += "per "+findName(dividers,this.dividingLine)+" ";
+      for(let i=0; i<this.subdivisions.length; i++) {
+        b += this.subdivisions[i].blazon();
+        if(i < this.subdivisions.length-1) {
+          b += "and ";
+        }
+      }
+      b = b.slice(0,b.length-1)+"; ";
+    } else {
+      b += this.field.blazon();
+      if(this.ordinaries.length > 0 || this.charges.length > 0) {
+        b = b.slice(0,b.length-1)+", ";
+      }
+    }
+    for(let i=0; i<this.ordinaries.length; i++) {
+      b += "a "+this.ordinaries[i].blazon();
+      // b += this.ordinaries[i].chargeDivision.blazon();
+      if(i < this.ordinaries.length-1) {
+        b += "and ";
+      }
+    }
+    if(this.ordinaries.length > 0 && this.charges.length > 0) {
+      b += "and ";
+    }
+    let groups = this.getChargeGroups();
+    for(let i=0; i<groups.length; i++) {
+      let plural = groups[i].length > 1;
+      b += groups[i].length+" "+groups[i][0].blazon(plural);
+      if(i < this.ordinaries.length-1) {
+        b += "and ";
+      }
+    }
+    if(groups.length > 0 && this.chargeArrangement!=="default") {
+      b += findName(layouts, this.chargeArrangement)+" ";
+    }
+    return b;
+  }
+  getChargeGroups() {
+    var allChargeGroups = [];
+    var copyCharges = this.charges.slice();
+    for(let i=0; i<this.charges.length; i++) {
+      let baseCharge = this.charges[i];
+      let chargeGroup = [];
+      for(let j=copyCharges.length-1; j>=0; j--) {
+        let comparedCharge = copyCharges[j];
+        if(baseCharge.equals(comparedCharge)) {
+          chargeGroup.push(comparedCharge);
+          copyCharges.splice(j,1);
+        }
+      }
+      if(chargeGroup.length > 0) {
+        allChargeGroups.push(chargeGroup);
+      }
+    }
+    return allChargeGroups;
+  }
   divide(dividingLine=null) {
     var alreadyDivided = false;
     if(dividingLine) {
@@ -94,6 +152,7 @@ class Division {
     this.subdivisions[0].field = this.field;
   }
   merge() {
+    this.dividingLine = "none";
     this.subdivisions = [];
   }
   addOrdinary(device, charge=null) {
@@ -201,6 +260,15 @@ class Field {
   equals(other) {
     return (this.variation===other.variation && this.tincture===other.tincture && this.tinctureTwo===other.tinctureTwo);
   }
+  blazon() {
+    if(this.variation==="plain") {
+      return this.tincture+" ";
+    } else if(this.variation==="masoned") {
+      return this.tincture+" masoned "+this.tinctureTwo+" ";
+    } else {
+      return this.variation+" "+this.tincture+" and "+this.tinctureTwo+" ";
+    }
+  }
   copy() {
     var copy = new Field();
     copy.variation = this.variation;
@@ -241,6 +309,12 @@ class Charge {
       return false;
     }
     return true;
+  }
+  blazon(isPlural=false) {
+    let deviceName = findName(mobileCharges, this.device);
+    if(!deviceName) { deviceName = findName(ordinaries, this.device)}
+    if(isPlural) { deviceName = pluralize(deviceName); }
+    return deviceName+" "+this.chargeDivision.blazon();
   }
   moveTo(position) {
     var currentPosition = this.chargeDivision.polygon.fullRect.center.copy();

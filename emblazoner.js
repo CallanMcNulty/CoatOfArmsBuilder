@@ -11,6 +11,7 @@ class Emblazoner {
   update() {
     this.svg.innerHTML = "";
     this.drawDivision(this.shield);
+    $("#blazon-box").text(this.shield.blazon());
   }
   drawPolygon(poly) {
     var pointString = "";

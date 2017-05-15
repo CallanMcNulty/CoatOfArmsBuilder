@@ -1,3 +1,19 @@
+var tinctures = ["argent", "or", "azure", "gules", "purpure", "sable", "vert"];
+var variations = ["plain", "barry", "bendy", "bendy sinister", "paly", "chequy", "lozengy", "masoned"];
+var dividers = [{name:"none", val:"none"}, {name:"pale", val:"pale"}, {name:"fess", val:"fess"}, {name:"bend", val:"bend"},
+                {name:"bend sinister", val:"bendSinister"}, {name:"chevron", val:"chevron"},
+                {name:"chevron reversed", val:"chevronReversed"}];
+var mobileCharges = [{name:"cross potent", val:"crossPotent"}, {name:"escutcheon", val:"escutcheon"}, {name:"fleur-de-lis", val:"fleurDeLis"},
+                    {name:"heart", val:"heart"}, {name:"lozenge", val:"lozenge"}, {name:"mullet", val:"mullet"},
+                    {name:"fish", val:"fish"}, {name:"lion", val:"lion_rampant"}];
+var ordinaries = [{name:"bend", val:"bend"}, {name:"bend sinister", val:"bendSinister"}, {name:"canton", val:"canton"},
+                {name:"chevron", val:"chevron"}, {name:"chevron reversed", val:"chevronReversed"}, {name:"chief", val:"chief"},
+                {name:"cross", val:"cross"}, {name:"fess", val:"fess"}, {name:"pale", val:"pale"}, {name:"saltire", val:"saltire"}];
+var layouts = [{name:"default", val:"default"}, {name:"specified", val:"specified"}, {name:"bendwise", val:"bend"},
+              {name:"bendwise sinister", val:"bendSinister"}, {name:"chevronwise", val:"chevron"}, {name:"chevronwise reversed", val:"chevronReversed"},
+              {name:"crosswise", val:"cross"}, {name:"fesswise", val:"fess"}, {name:"palewise", val:"pale"}, {name:"saltirewise", val:"saltire"}];
+var irregularPlurals = [{singular:"cross potent", plural:"crosses potent"}, {singular:"fleur-de-lis", plural:"fleurs-de-lis"},
+                      {singular:"fish", plural:"fishes"}];
 TINCTURE = {
   argent: "#f7f7f7",
   or: "gold",
@@ -70,7 +86,7 @@ CHARGE = {
 }
 CHARGE_PARTS = {
   fish: {
-    finned: [
+    Finned: [
       new Polygon([new Point(85,45), new Point(92,39), new Point(100,35), new Point(100,40), new Point(97,50),
                   new Point(100,60), new Point(100,65), new Point(92,61), new Point(85,55), new Point(93,50)]),
       new Polygon([new Point(38,36), new Point(43,29), new Point(48,25), new Point(53,29), new Point(57,35), new Point(54,37)]),
@@ -81,11 +97,11 @@ CHARGE_PARTS = {
     ]
   },
   lion_rampant: {
-    langued: [
+    Langued: [
       new Polygon([new Point(35.8,20.2), new Point(37.3,22.6), new Point(39.5,23.7), new Point(44.7,20.9), new Point(51,19.8),
         new Point(49.7,22.5), new Point(45.1,23), new Point(40.8,25.4), new Point(37.8,25), new Point(36.2,22.4)])
     ],
-    armed: [
+    Armed: [
       new Polygon([new Point(26.8,3.7), new Point(29.1,6.6), new Point(28.9,9), new Point(27.5,8.1)]),
       new Polygon([new Point(18,5.2), new Point(22.3,5.3), new Point(24,7.3), new Point(21.8,7.9)]),
       new Polygon([new Point(15,12.8), new Point(18.9,12), new Point(20.2,13.5), new Point(18.6,14.4)]),
@@ -191,4 +207,16 @@ function copyChargeParts(parts) {
     }
   }
   return copy;
+}
+function findName(array, value, knownProp="val", soughtProp="name") {
+  let index = array.findIndex(function(el){ return el[knownProp]===value; });
+  if(index===-1) { return null; }
+  return array[index][soughtProp];
+}
+function pluralize(word) {
+  let irreg = findName(irregularPlurals, word, "singular", "plural")
+  if(irreg) {
+    return irreg;
+  }
+  return word+"s";
 }

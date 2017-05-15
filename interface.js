@@ -15,17 +15,6 @@ $(document).ready(function() {
     if(division.subdivisions.length===0) {
       editorEmblazoner.addField(division.field, poly, division.polygon);
     }
-    if(division.parentCharge && division.parentCharge.secondaryChargeDivisions.length!==0) {
-      let keys = Object.keys(division.parentCharge.secondaryChargeDivisions);
-      for(let i=0; i<keys.length; i++) {
-        let chargeParts = division.parentCharge.secondaryChargeDivisions[keys[i]];
-        for(let j=0; j<chargeParts.length; j++) {
-          var newEditorContainer = $("<div class='editor-container'></div>");
-          element.append(newEditorContainer);
-          createDivisionEditor(chargeParts[j], newEditorContainer);
-        }
-      }
-    }
     if(division.subdivisions.length===0) {
       divisionEditor.append(createFieldEditor(division, element));
     } else {
@@ -34,6 +23,9 @@ $(document).ready(function() {
         element.append(newDivisionEditor);
         createDivisionEditor(division.subdivisions[i], newDivisionEditor);
       }
+    }
+    if(division.parentCharge && Object.keys(division.parentCharge.secondaryChargeDivisions).length!==0) {
+      divisionEditor.append(createPartEditor(division));
     }
     divisionEditor.append(createSubdivisionEditor(division, element));
     divisionEditor.append(createChargeMaker(division, element));
@@ -132,8 +124,6 @@ $(document).ready(function() {
   }
 
   function createFieldEditor(division, parentDivisionElement) {
-    var tinctures = ["argent", "or", "azure", "gules", "purpure", "sable", "vert"];
-    var variations = ["plain", "barry", "bendy", "bendy sinister", "paly", "chequy", "lozengy", "masoned"];
 
     var fieldEditor = $("<div class='mini-editor'><span>Field</span><hr></div>");
 
@@ -212,9 +202,7 @@ $(document).ready(function() {
   }
 
   function createSubdivisionEditor(division, parentDivisionElement) {
-    var dividers = [{name:"none", val:"none"}, {name:"pale", val:"pale"}, {name:"fess", val:"fess"}, {name:"bend", val:"bend"},
-                    {name:"bend sinister", val:"bendSinister"}, {name:"chevron", val:"chevron"},
-                    {name:"chevron reversed", val:"chevronReversed"}];
+
     var subdivisionEditor = $("<div class='mini-editor'><span>Divisions</span><hr></div>");
 
     var editorRow = $("<div class='editor-row'></div>");
@@ -249,12 +237,7 @@ $(document).ready(function() {
   }
 
   function createChargeMaker(division, parentDivisionElement) {
-    var mobileCharges = [{name:"cross potent", val:"crossPotent"}, {name:"escutcheon", val:"escutcheon"}, {name:"fleur-de-lis", val:"fleurDeLis"},
-                        {name:"heart", val:"heart"}, {name:"lozenge", val:"lozenge"}, {name:"mullet", val:"mullet"},
-                        {name:"fish", val:"fish"}, {name:"lion", val:"lion_rampant"}];
-    var ordinaries = [{name:"bend", val:"bend"}, {name:"bend sinister", val:"bendSinister"}, {name:"canton", val:"canton"},
-                    {name:"chevron", val:"chevron"}, {name:"chevron reversed", val:"chevronReversed"}, {name:"chief", val:"chief"},
-                    {name:"cross", val:"cross"}, {name:"fess", val:"fess"}, {name:"pale", val:"pale"}, {name:"saltire", val:"saltire"}];
+
     var chargeEditor = $("<div class='mini-editor'><span>Charges</span><hr></div>");
     var editorRow = $("<div class='editor-row'></div>");
 
@@ -291,14 +274,11 @@ $(document).ready(function() {
   }
 
   function createLayoutEditor(division) {
-    var layouts = [{name:"default", val:"default"}, {name:"specified", val:"specified"}, {name:"bendwise", val:"bend"},
-                  {name:"bendwise sinister", val:"bendSinister"}, {name:"chevronwise", val:"chevron"}, {name:"chevronwise reversed", val:"chevronReversed"},
-                  {name:"crosswise", val:"cross"}, {name:"fesswise", val:"fess"}, {name:"palewise", val:"pale"}, {name:"saltirewise", val:"saltire"}];
+
     var layoutEditor = $("<div class='mini-editor'><span>Charge Layout</span><hr></div>");
     var editorRow = $("<div class='editor-row'></div>");
-    editorRow = $("<div class='editor-row'></div>");
 
-    htmlString = "<label>Layout:</label><select>";
+    var htmlString = "<label>Layout:</label><select>";
     for(let i=0; i<layouts.length; i++) {
       htmlString += "<option value="+layouts[i].val+" "+(layouts[i].val===division.chargeArrangement ? "selected":"")+">"+
                     layouts[i].name+"</option>";
@@ -365,4 +345,30 @@ $(document).ready(function() {
     return layoutEditor;
   }
 
+  function createPartEditor(division) {
+    var partEditor = $("<div class='mini-editor' style='overflow-y:auto;'><span>Charge Parts</span><hr></div>");
+    var scdivs = division.parentCharge.secondaryChargeDivisions;
+    let keys = Object.keys(scdivs);
+    for(let i=0; i<keys.length; i++) {
+      let editorRow = $("<div class='editor-row'></div>");
+      let htmlString = "<label>"+keys[i].replace("_"," ")+":</label><select class='tincture-select'>";
+      let currentTincture = scdivs[keys[i]][0].field.tincture;
+      for(let i=0; i<tinctures.length; i++) {
+        htmlString += "<option "+(tinctures[i]===currentTincture ? "selected":"")+">"+tinctures[i]+"</option>";
+      }
+      htmlString += "</select>";
+      let selector = $(htmlString);
+      editorRow.append(selector);
+      partEditor.append(editorRow);
+      selector.change(function() {
+        var choice = $(this).val();
+        let chargeParts = scdivs[keys[i]];
+        for(let j=0; j<chargeParts.length; j++) {
+          chargeParts[j].field.tincture = choice;
+        }
+        emblazoner.update();
+      });
+    }
+    return partEditor;
+  }
 });
