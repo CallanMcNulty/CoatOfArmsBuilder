@@ -2,10 +2,12 @@ var tinctures = ["argent", "or", "azure", "gules", "purpure", "sable", "vert"];
 var variations = ["plain", "barry", "bendy", "bendy sinister", "paly", "chequy", "lozengy", "masoned"];
 var dividers = [{name:"none", val:"none"}, {name:"pale", val:"pale"}, {name:"fess", val:"fess"}, {name:"bend", val:"bend"},
                 {name:"bend sinister", val:"bendSinister"}, {name:"chevron", val:"chevron"},
-                {name:"chevron reversed", val:"chevronReversed"}];
+                {name:"chevron reversed", val:"chevronReversed"}, {name:"quarterly", val:"cross"},
+                {name:"saltire", val:"saltire"}];
 var mobileCharges = [{name:"cross potent", val:"crossPotent"}, {name:"escutcheon", val:"escutcheon"}, {name:"fleur-de-lis", val:"fleurDeLis"},
-                    {name:"heart", val:"heart"}, {name:"lozenge", val:"lozenge"}, {name:"mullet", val:"mullet"},
-                    {name:"fish", val:"fish"}, {name:"lion", val:"lion_rampant"}];
+                    {name:"heart", val:"heart"}, {name:"lozenge", val:"lozenge"}, {name:"mullet", val:"mullet"}];
+var beasts = [{name:"fish", val:"fish"}, {name:"lion", val:"lion"}];
+var attitudes = ["naiant", "rampant"];
 var ordinaries = [{name:"bend", val:"bend"}, {name:"bend sinister", val:"bendSinister"}, {name:"canton", val:"canton"},
                 {name:"chevron", val:"chevron"}, {name:"chevron reversed", val:"chevronReversed"}, {name:"chief", val:"chief"},
                 {name:"cross", val:"cross"}, {name:"fess", val:"fess"}, {name:"pale", val:"pale"}, {name:"saltire", val:"saltire"}];
@@ -45,7 +47,7 @@ CHARGE = {
                 new Point(45,87), new Point(33,90), new Point(22,81), new Point(32,84), new Point(40,80), new Point(35,75),
                 new Point(40,70), new Point(25,55), new Point(15,55), new Point(20,70), new Point(3,60), new Point(0,50),
                 new Point(3,37), new Point(15,30), new Point(30,35), new Point(45,60), new Point(40,40), new Point(33,25), new Point(40,10)]),
-  fish: new Polygon([new Point(2,45), new Point(7,45), new Point(18,40), new Point(28,38), new Point(35,35), new Point(55,37),
+  fish_naiant: new Polygon([new Point(2,45), new Point(7,45), new Point(18,40), new Point(28,38), new Point(35,35), new Point(55,37),
                 new Point(75,43), new Point(85,45), new Point(93,50), new Point(85,55), new Point(75,57), new Point(60,63),
                 new Point(30,65), new Point(21,63), new Point(28,55), new Point(28,45), new Point(27,55), new Point(19,62),
                 new Point(10,60), new Point(0,50), new Point(10,55)]),
@@ -85,8 +87,8 @@ CHARGE = {
                 new Point(31.9,21.5), new Point(41.6,31.7), new Point(38.3,36.4), new Point(37.7,41.8), new Point(39.1,36.8)])
 }
 CHARGE_PARTS = {
-  fish: {
-    Finned: [
+  fish_naiant: {
+    finned: [
       new Polygon([new Point(85,45), new Point(92,39), new Point(100,35), new Point(100,40), new Point(97,50),
                   new Point(100,60), new Point(100,65), new Point(92,61), new Point(85,55), new Point(93,50)]),
       new Polygon([new Point(38,36), new Point(43,29), new Point(48,25), new Point(53,29), new Point(57,35), new Point(54,37)]),
@@ -97,11 +99,11 @@ CHARGE_PARTS = {
     ]
   },
   lion_rampant: {
-    Langued: [
+    langued: [
       new Polygon([new Point(35.8,20.2), new Point(37.3,22.6), new Point(39.5,23.7), new Point(44.7,20.9), new Point(51,19.8),
         new Point(49.7,22.5), new Point(45.1,23), new Point(40.8,25.4), new Point(37.8,25), new Point(36.2,22.4)])
     ],
-    Armed: [
+    armed: [
       new Polygon([new Point(26.8,3.7), new Point(29.1,6.6), new Point(28.9,9), new Point(27.5,8.1)]),
       new Polygon([new Point(18,5.2), new Point(22.3,5.3), new Point(24,7.3), new Point(21.8,7.9)]),
       new Polygon([new Point(15,12.8), new Point(18.9,12), new Point(20.2,13.5), new Point(18.6,14.4)]),
@@ -121,6 +123,7 @@ CHARGE_PARTS = {
     ]
   }
 }
+var attitudesPerBeast = {"lion": ["rampant"], "fish": ["naiant"]};
 DIVISION = {
   perChevron: [
     [new Point(0,60), new Point(50,40), new Point(100,60)]

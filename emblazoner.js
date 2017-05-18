@@ -356,13 +356,14 @@ function getLayoutPoints(layout) {
   return {radius:minSpacing/2, pts:points};
 }
 
-function dividePolygon(basePolygon, paths) {
+function dividePolygon(basePolygon, paths, sizePolygon=null) {
+  if(!sizePolygon) { sizePolygon=basePolygon; }
   let divisionPolygon = new Polygon(Array.prototype.concat.apply([], paths));
   divisionPolygon.fullRect = { x1:0, y1:0, x2:100, y2:100, width:100, height:100, center:new Point(50,50) };
-  let baseCenter = basePolygon.getCenter();
+  let baseCenter = sizePolygon.getCenter();
   divisionPolygon.moveTo(baseCenter);
-  let baseWidth = basePolygon.fullRect.width;
-  let baseHeight = basePolygon.fullRect.height;
+  let baseWidth = sizePolygon.fullRect.width;
+  let baseHeight = sizePolygon.fullRect.height;
   if(baseHeight > baseWidth) {
     divisionPolygon.resizeToHeight(baseWidth);
   } else {

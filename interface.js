@@ -241,17 +241,54 @@ $(document).ready(function() {
     var chargeEditor = $("<div class='mini-editor'><span>Charges</span><hr></div>");
     var editorRow = $("<div class='editor-row'></div>");
 
-    var htmlString = "<label>Device:</label><select>";
+    var typeSelector = $(
+    `<label>Charge Type:</label><select>
+      <option>ordinary</option>
+      <option>common</option>
+      <option>beast</option>
+    </select>`);
+    editorRow.append(typeSelector);
+    chargeEditor.append(editorRow);
+
+    var secondEditorRow = $("<div class='editor-row'></div>");
+    var htmlString = "<label>Device:</label>";
+    secondEditorRow.append($(htmlString));
+
+    htmlString = "<select>";
     for(let i=0; i<ordinaries.length; i++) {
       htmlString += "<option value="+ordinaries[i].val+">"+ordinaries[i].name+"</option>";
     }
+    htmlString += "</select>";
+    var ordinarySelector = $(htmlString);
+    secondEditorRow.append(ordinarySelector);
+
+    htmlString = "<select>";
     for(let i=0; i<mobileCharges.length; i++) {
       htmlString += "<option value="+mobileCharges[i].val+">"+mobileCharges[i].name+"</option>";
     }
     htmlString += "</select>";
-    var selector = $(htmlString);
-    editorRow.append(selector);
-    chargeEditor.append(editorRow);
+    var commonSelector = $(htmlString);
+    secondEditorRow.append(commonSelector);
+    commonSelector.hide();
+
+    htmlString = "<select>";
+    for(let i=0; i<beasts.length; i++) {
+      htmlString += "<option value="+beasts[i].val+">"+beasts[i].name+"</option>";
+    }
+    htmlString += "</select>";
+    var beastSelector = $(htmlString);
+    secondEditorRow.append(beastSelector);
+    beastSelector.hide();
+
+    htmlString = "<select>";
+    for(let i=0; i<attitudes.length; i++) {
+      htmlString += "<option value="+attitudes[i]+">"+attitudes[i]+"</option>";
+    }
+    htmlString += "</select>";
+    var attitudeSelector = $(htmlString);
+    secondEditorRow.append(attitudeSelector);
+    attitudeSelector.hide();
+    chargeEditor.append(secondEditorRow);
 
     editorRow = $("<div class='editor-row'></div>");
 
@@ -259,8 +296,43 @@ $(document).ready(function() {
     editorRow.append(button);
     chargeEditor.append(editorRow);
 
+    var selectors = [ordinarySelector, commonSelector, beastSelector, attitudeSelector];
+    var selector = ordinarySelector;
+
+    var changeAvailableAttitudes = function(beast) {
+      $(attitudeSelector[0].children).hide();
+      let possibleAttitudes = attitudesPerBeast[beast];
+      for(let i=0; i<possibleAttitudes.length; i++) {
+        $(attitudeSelector[0].querySelector("option[value='"+possibleAttitudes[i]+"']")).show();
+      }
+      $(attitudeSelector[0].children).removeAttr("selected");
+      attitudeSelector[0].querySelector("option[value='"+possibleAttitudes[0]+"']").setAttribute("selected", "selected");
+    }
+    changeAvailableAttitudes(beasts[0].name);
+
+    typeSelector.change(function(event) {
+      var choice = $(this).val();
+      selectors.forEach(sel=>sel.hide());
+      if(choice==="ordinary") {
+        selector = ordinarySelector;
+      } else if(choice==="common") {
+        selector = commonSelector;
+      } else if(choice==="beast") {
+        selector = beastSelector;
+        attitudeSelector.show();
+      }
+      selector.show();
+    });
+    beastSelector.change(function(event) {
+      var choice = $(this).val();
+      var beast = choice.split("_")[0];
+      changeAvailableAttitudes(beast);
+    });
     button.click(function(event) {
-      var choice = $(selector[1]).val();
+      var choice = selector.val();
+      if(selector===beastSelector) {
+        choice += "_"+attitudeSelector.val();
+      }
       isOrdinary = ordinaries.findIndex(function(el) {return el.val===choice;}) !== -1;
       if(isOrdinary) {
         division.addOrdinary(choice);

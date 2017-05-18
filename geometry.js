@@ -602,7 +602,13 @@ class Polygon {
     if(newPaths.length > 0) {
       traversers.push({ open:true, points:[], path:newOuterPath, index:startIndex });
     }
+    let ct = 0;
     while(newPaths.length > 0) {
+      ct++;
+      if(ct > 1000) {
+        console.log("FAIL");
+        return [this];
+      }
       var currentTraverser = traversers.find(function(element) {
         return element.open;
       });

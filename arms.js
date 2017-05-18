@@ -133,8 +133,25 @@ class Division {
     }
     var dividedByOrdinary = this.ordinaries.findIndex(function(ord) { return ord.device===dividingLine; });
     if(dividedByOrdinary===-1) {
-      var divisionPaths = copyPaths(DIVISION["per"+dividingLine[0].toUpperCase()+dividingLine.slice(1)]);
-      var divisionPolygons = dividePolygon(this.polygon, divisionPaths);
+      if(dividingLine==="saltire") {
+        var line1 = "perBend";
+        var line2 = "perBendSinister";
+      } else if(dividingLine==="cross") {
+        var line1 = "perFess";
+        var line2 = "perPale";
+      }
+      if(dividingLine==="saltire" || dividingLine==="cross") {
+        var divisionPathsPt1 = copyPaths(DIVISION[line1]);
+        var divisionPolygonsPt1 = dividePolygon(this.polygon, divisionPathsPt1);
+        var divisionPolygons = [];
+        for(let i=0; i<divisionPolygonsPt1.length; i++) {
+          var divisionPathsPt2 = copyPaths(DIVISION[line2]);
+          divisionPolygons = divisionPolygons.concat(dividePolygon(divisionPolygonsPt1[i], divisionPathsPt2, this.polygon));
+        }
+      } else {
+        var divisionPaths = copyPaths(DIVISION["per"+dividingLine[0].toUpperCase()+dividingLine.slice(1)]);
+        var divisionPolygons = dividePolygon(this.polygon, divisionPaths);
+      }
     } else {
       var divisionPaths = copyPaths(DIVISION[dividingLine]);
       var divisionPolygons = dividePolygon(this.polygon, divisionPaths).slice(1);
@@ -312,9 +329,22 @@ class Charge {
   }
   blazon(isPlural=false) {
     let deviceName = findName(mobileCharges, this.device);
-    if(!deviceName) { deviceName = findName(ordinaries, this.device)}
+    if(!deviceName) { deviceName = findName(ordinaries, this.device); }
+    let isBeast = false;
+    if(!deviceName) {
+      isBeast = true;
+      deviceName = findName(beasts, this.device.split("_")[0]);
+    }
     if(isPlural) { deviceName = pluralize(deviceName); }
-    return deviceName+" "+this.chargeDivision.blazon();
+    let b = deviceName+" ";
+    if(isBeast) { b+=this.device.split("_")[1]+" "; }
+    b += this.chargeDivision.blazon();
+    var keys = Object.keys(this.secondaryChargeDivisions);
+    for(let i=0; i<keys.length; i++) {
+      let part = this.secondaryChargeDivisions[keys[i]];
+      b += keys[i]+" "+part[0].field.blazon();
+    }
+    return b;
   }
   moveTo(position) {
     var currentPosition = this.chargeDivision.polygon.fullRect.center.copy();
